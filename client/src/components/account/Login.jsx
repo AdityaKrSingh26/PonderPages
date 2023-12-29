@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { API } from '../../service/api'
 import { TextField, Box, Button, styled, Typography } from '@mui/material'
 
 const CmpWrapper = styled(Box)`
@@ -81,6 +82,10 @@ function Login() {
         console.log(e.target.name, e.target.value)
     }
 
+    const signupUser = async () => {
+        let response = await API.userSignup(signup)
+    }
+
     return (
         <CmpWrapper>
             {account === 'login' ?
@@ -132,7 +137,10 @@ function Login() {
                             onChange={(e) => inputChange(e)}
                             placeholder='Enter your Password'
                         />
-                        <SignupButton variant='contained'>
+                        <SignupButton
+                            variant='contained'
+                            onClick={() => signupUser()}
+                        >
                             Sign up
                         </SignupButton>
                         <Text>OR</Text>
@@ -143,7 +151,7 @@ function Login() {
                 </Component>
 
             }
-        </CmpWrapper>
+        </CmpWrapper >
     )
 }
 
