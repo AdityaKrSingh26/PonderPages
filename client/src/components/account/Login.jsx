@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { API } from '../../service/api'
 import { TextField, Box, Button, styled, Typography } from '@mui/material'
+
+import { DataContext } from '../../context/DataProvider'
+import { useNavigate } from 'react-router-dom'
 
 const CmpWrapper = styled(Box)`
     width: 100%;
@@ -57,6 +60,14 @@ const Text = styled(Typography)`
     text-align: center;
 `
 
+const Error = styled(Typography)` 
+    font-size: 10px;
+    color: #ff6161;
+    line-height:0;
+    magin-top:10px;
+    font-weight: 600;
+`
+
 const signupInitialValues = {
     name: '',
     username: '',
@@ -71,20 +82,61 @@ const loginInitialValues = {
 
 function Login() {
 
+    const navigate = useNavigate()
+
     const imageURL = 'https://www.sesta.it/wp-content/uploads/2021/03/logo-blog-sesta-trasparente.png';
 
     const [account, toggleAccount] = useState('login')
     const [signup, setSingup] = useState(signupInitialValues)
     const [login, setLogin] = useState(loginInitialValues)
+    const [error, setError] = useState('')
+
+    const { setAccount } = useContext(DataContext)
 
     const inputChange = (e) => {
         setSingup({ ...signup, [e.target.name]: e.target.value })
-        console.log(e.target.name, e.target.value)
+        // console.log(e.target.name, e.target.value)
+    }
+    const valueChange = (e) => {
+        setLogin({ ...login, [e.target.name]: e.target.value })
     }
 
     const signupUser = async () => {
-        let response = await API.userSignup(signup)
+        try {
+            let response = await API.userSignup(signup);
+            console.log(response);
+            if (response && response.isSuccess) {
+                setError('');
+                setSingup(signupInitialValues);
+                toggleAccount('login');
+            } else {
+                setError('Something went wrong, please try again later');
+            }
+        } catch (error) {
+            console.error('Error in signupUser:', error);
+            setError('Something went wrong, please try again later');
+        }
+    };
+
+    const loginUser = async () => {
+        let response = await API.userLogin(login)
+        if (response.isSuccess) {
+            setError('')
+
+            sessionStorage.setItem('accessToken', `Bearer ${response.data.accessToken}`)
+            sessionStorage.setItem('refreshToken', `Bearer ${response.data.refreshToken}`)
+
+            setAccount({ username: response.data.username, name: response.data.name })
+            navigate('/')
+
+        }
+        else {
+            setError('Something went wrong, please try again later');
+        }
     }
+
+
+
 
     return (
         <CmpWrapper>
@@ -95,15 +147,20 @@ function Login() {
                     <Wrapper>
                         <TextField
                             variant='standard'
+                            onChange={(e) => valueChange(e)}
                             name='username'
                             placeholder='Enter your Username'
                         />
                         <TextField
                             variant='standard'
+                            onChange={(e) => valueChange(e)}
                             name='password'
                             placeholder='Enter your Password'
                         />
-                        <LoginButton variant='contained'>
+                        <LoginButton
+                            variant='contained'
+                            onClick={() => loginUser()}
+                        >
                             Login
                         </LoginButton>
                         <Text>OR</Text>
@@ -137,6 +194,7 @@ function Login() {
                             onChange={(e) => inputChange(e)}
                             placeholder='Enter your Password'
                         />
+                        {error && <Error>{error}</Error>}
                         <SignupButton
                             variant='contained'
                             onClick={() => signupUser()}

@@ -27,7 +27,7 @@ axiosInstance.interceptors.response.use(
     },
     function (error) {
         // stop loader here
-        return Promise.reject(processError(response))
+        return Promise.reject(processError(error))
     }
 )
 
@@ -39,14 +39,17 @@ axiosInstance.interceptors.response.use(
 
 const processResponse = (response) => {
     if (response?.status === 200) {
-        return { isSuccess: true, data: object }
+        return ({
+            isSuccess: true,
+            data: response.data
+        })
     } else {
-        return {
+        return ({
             isFaliure: true,
             status: response?.status,
             msg: response?.msg,
             code: response?.code
-        }
+        })
     }
 }
 
@@ -90,7 +93,7 @@ const API = {}
 
 for (const [key, value] of Object.entries(SERVICE_URL)) {
     API[key] = (body, showUploadProgress, showDownloadProgress) => {
-        axiosInstance({
+        return axiosInstance({
             method: value.method,
             url: value.url,
             data: body,
