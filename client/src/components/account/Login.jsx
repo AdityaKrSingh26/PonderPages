@@ -80,7 +80,7 @@ const loginInitialValues = {
 }
 
 
-function Login() {
+function Login({ isUserAuthenticated }) {
 
     const navigate = useNavigate()
 
@@ -128,6 +128,7 @@ function Login() {
 
             setAccount({ username: response.data.username, name: response.data.name })
             navigate('/')
+            isUserAuthenticated(true)
 
         }
         else {
