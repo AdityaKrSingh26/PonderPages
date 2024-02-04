@@ -4,6 +4,9 @@ import { styled, Box, TextareaAutosize, Button, InputBase, FormControl } from '@
 import { AddCircle as Add } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+import { DataContext } from '../../context/DataProvider';
+import { API } from '../../service/api'
+
 const Container = styled(Box)`
     margin:50px 100px
 `;
@@ -51,11 +54,35 @@ function CreatePost() {
 
     const [post, setPost] = useState(initialPost)
     const [file, setFile] = useState('')
-    
+    const location = useLocation()
+    const { account } = useContext(DataContext)
 
-    c
+    const url = post.picture ? post.picture : 'https://images.unsplash.com/photo-1543128639-4cb7e6eeef1b?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bGFwdG9wJTIwc2V0dXB8ZW58MHx8MHx8&ixlib=rb-1.2.1&w=1000&q=80'
 
-    const url = 'https://images.unsplash.com/photo-1543128639-4cb7e6eeef1b?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bGFwdG9wJTIwc2V0dXB8ZW58MHx8MHx8&ixlib=rb-1.2.1&w=1000&q=80'
+    const handleChange = (e) => {
+        setPost({ ...post, [e.target.name]: e.target.value })
+    }
+
+    useEffect(() => {
+        const getImage = async () => {
+            if (file) {
+                const data = new FormData()
+                data.append('name', file.name)
+                data.append('file', file)
+
+                // api call
+                const response = await API.uploadFile(data)
+                post.picture = '' //tode
+
+            }
+        }
+        getImage()
+        post.categories = location.search?.split('=')[1] || 'All'
+        post.username = account.username
+    }, [file])
+
+
+
 
     return (
         <Container>
@@ -69,15 +96,21 @@ function CreatePost() {
                     type="file"
                     id='fileInput'
                     style={{ display: "none" }}
+                    onChange={(e) => setFile(e.target.files[0])}
                 />
-
-                <InputTextField placeholder='Title.... ' />
+                <InputTextField
+                    placeholder='Title.... '
+                    name='title'
+                    onChange={(e) => handleChange(e)}
+                />
                 <Button variant='contained'>Publish</Button>
 
             </StyledFormControl>
             <Textarea
                 minRows={5}
                 placeholder="Tell your story..."
+                name='description'
+                onChange={(e) => handleChange(e)}
             />
         </Container>
     )

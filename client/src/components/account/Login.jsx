@@ -118,6 +118,7 @@ function Login({ isUserAuthenticated }) {
         }
     };
 
+    
     const loginUser = async () => {
         let response = await API.userLogin(login)
         if (response.isSuccess) {
